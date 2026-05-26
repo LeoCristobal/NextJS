@@ -19,10 +19,13 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { redirect, useRouter } from "next/navigation";
 
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 export default function Page() {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -37,6 +40,16 @@ export default function Page() {
       email: data.email,
       name: data.name,
       password: data.password,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Registered successfully");
+          router.push("/");
+        },
+
+        onError: ({ error }: any) => {
+          toast.error(error.message);
+        },
+      },
     });
   };
   return (

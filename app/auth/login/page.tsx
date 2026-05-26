@@ -1,3 +1,5 @@
+"use client";
+import { loginSchema } from "@/app/schemas/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,70 +11,102 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-export default function Page({ ...props }: React.ComponentProps<typeof Card>) {
+import { authClient } from "@/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+export default function LoginPage() {
+  const router = useRouter();
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
+    await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Logged In successfully");
+          router.push("/");
+        },
+
+        onError: ({ error }) => {
+          toast.error(error.message);
+        },
+      },
+    });
+  };
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="flex h-screen w-full items-center justify-center p-6 md:p-10 overflow-hidden">
       <div className="w-full max-w-sm">
-        <Card {...props}>
+        <Card>
           <CardHeader>
-            <CardTitle>Create an account</CardTitle>
+            <CardTitle>Login</CardTitle>
             <CardDescription>
-              Enter your information below to create your account
+              Enter your information below to continue
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    required
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                  />
-                  <FieldDescription>
-                    We&apos;ll use this to contact you. We will not share your
-                    email with anyone else.
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input id="password" type="password" required />
-                  <FieldDescription>
-                    Must be at least 8 characters long.
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="confirm-password">
-                    Confirm Password
-                  </FieldLabel>
-                  <Input id="confirm-password" type="password" required />
-                  <FieldDescription>
-                    Please confirm your password.
-                  </FieldDescription>
-                </Field>
+                <Controller
+                  name="email"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field>
+                      <FieldLabel htmlFor="email">Email</FieldLabel>
+                      <Input
+                        aria-invalid={fieldState.invalid}
+                        id="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        {...field}
+                      />
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field>
+                      <FieldLabel htmlFor="password">Password</FieldLabel>
+                      <Input
+                        aria-invalid={fieldState.invalid}
+                        id="password"
+                        type="password"
+                        {...field}
+                      />
+                      {fieldState.error && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
                 <FieldGroup>
                   <Field>
-                    <Button type="submit">Create Account</Button>
-                    <Button variant="outline" type="button">
-                      Sign up with Google
-                    </Button>
+                    <Button type="submit">Login</Button>
                     <FieldDescription className="px-6 text-center">
-                      Already have an account? <a href="#">Sign in</a>
+                      Don't have an account?{" "}
+                      <Link href="/auth/register">Register</Link>
                     </FieldDescription>
                   </Field>
                 </FieldGroup>
