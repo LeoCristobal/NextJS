@@ -16,10 +16,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 
 import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 export default function Page() {
   const form = useForm({
     resolver: zodResolver(registerSchema),
@@ -30,8 +32,12 @@ export default function Page() {
     },
   });
 
-  const onSubmit = () => {
-    console.log("yooo");
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
+    await authClient.signUp.email({
+      email: data.email,
+      name: data.name,
+      password: data.password,
+    });
   };
   return (
     <div className="flex h-screen w-full items-center justify-center p-6 md:p-10 overflow-hidden">

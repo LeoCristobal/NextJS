@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/web/navbar";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ConvexClientProvider } from "@/components/web/ConvexClientProvider";
-import { getToken } from "@/lib/auth-server";
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const token = await getToken();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
@@ -20,9 +18,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">
-            <ConvexClientProvider initialToken={token}>
-              {children}
-            </ConvexClientProvider>
+            <ConvexClientProvider>{children}</ConvexClientProvider>
           </main>
         </ThemeProvider>
       </body>
